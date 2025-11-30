@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optical Surface Testplate Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #d2d2d7;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: #6e6e73;
+            white-space: nowrap;
+        }
+
+        .input-group input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        button {
+            padding: 7px 16px;
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1d1d1f;
+        }
+
+        button:hover {
+            background: #f5f5f7;
+            border-color: #b8b8bd;
+        }
+
+        button.primary {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        button.primary:hover {
+            background: #0055b3;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f9f9fb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #1d1d1f;
+            border-bottom: 2px solid #e5e5ea;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+
+        tbody tr:hover {
+            background: #f9f9fb;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #d2d2d7;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .calculated {
+            background: #f5f5f7;
+            color: #6e6e73;
+            font-weight: 500;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .add-row-btn {
+            margin-top: 12px;
+            font-size: 13px;
+            padding: 6px 14px;
+        }
+
+        .status-bar {
+            background: white;
+            border-top: 1px solid #d2d2d7;
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #6e6e73;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: #0066cc;
+            margin-left: 4px;
+        }
+
+        /* Column widths */
+        th:nth-child(1), td:nth-child(1) { width: 100px; }
+        th:nth-child(2), td:nth-child(2) { width: 90px; }
+        th:nth-child(3), td:nth-child(3) { width: 110px; }
+        th:nth-child(4), td:nth-child(4) { width: 110px; }
+        th:nth-child(5), td:nth-child(5) { width: 90px; }
+        th:nth-child(6), td:nth-child(6) { width: 120px; }
+        th:nth-child(7), td:nth-child(7) { width: 110px; }
+        th:nth-child(8), td:nth-child(8) { width: 110px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Optical Surface Testplate Analyzer</h1>
+            <div class="input-group">
+                <label for="wavelength">λ (nm):</label>
+                <input type="number" id="wavelength" value="632.8" step="0.1">
+            </div>
+        </div>
+        <div class="header-right">
+            <button id="importBtn">Import from Zemax</button>
+            <button id="exportBtn" class="primary">Generate PDF Report</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Diameter (mm)</th>
+                        <th>R Testplate (mm)</th>
+                        <th>Sag Testplate (mm)</th>
+                        <th>Fringes (N)</th>
+                        <th>Sag Added (mm)</th>
+                        <th>R Actual (mm)</th>
+                        <th>Sag Actual (mm)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+        <button class="add-row-btn" id="addRowBtn">+ Add Surface</button>
+    </div>
+
+    <div class="status-bar">
+        <span id="statusText">Ready</span>
+    </div>
+
+    <script>
+        // Constants
+        let wavelength = 632.8; // nm
+
+        // Initialize table with one row
+        function initTable() {
+            addRow();
+        }
+
+        // Add a new row
+        function addRow(data = {}) {
+            const tbody = document.getElementById('tableBody');
+            const row = tbody.insertRow();
+            
+            const defaultData = {
+                type: 'Convex',
+                diameter: '',
+                rTestplate: '',
+                sagTestplate: 0,
+                fringes: '',
+                sagAdded: 0,
+                rActual: 0,
+                sagActual: 0
+            };
+
+            const rowData = { ...defaultData, ...data };
+
+            row.innerHTML = `
+                <td>
+                    <select class="type-select" onchange="calculateRow(this)">
+                        <option value="Convex" ${rowData.type === 'Convex' ? 'selected' : ''}>Convex</option>
+                        <option value="Concave" ${rowData.type === 'Concave' ? 'selected' : ''}>Concave</option>
+                    </select>
+                </td>
+                <td><input type="number" class="diameter" value="${rowData.diameter}" step="0.001" oninput="calculateRow(this)"></td>
+                <td><input type="number" class="r-testplate" value="${rowData.rTestplate}" step="0.001" oninput="calculateRow(this)"></td>
+                <td><input type="number" class="sag-testplate calculated" value="${rowData.sagTestplate.toFixed(6)}" readonly></td>
+                <td><input type="number" class="fringes" value="${rowData.fringes}" step="0.5" oninput="calculateRow(this)"></td>
+                <td><input type="number" class="sag-added calculated" value="${rowData.sagAdded.toFixed(6)}" readonly></td>
+                <td><input type="number" class="r-actual calculated" value="${rowData.rActual.toFixed(6)}" readonly></td>
+                <td><input type="number" class="sag-actual calculated" value="${rowData.sagActual.toFixed(6)}" readonly></td>
+            `;
+        }
+
+        // Calculate row values
+        function calculateRow(element) {
+            const row = element.closest('tr');
+            
+            const type = row.querySelector('.type-select').value;
+            const diameter = parseFloat(row.querySelector('.diameter').value) || 0;
+            const rTestplate = parseFloat(row.querySelector('.r-testplate').value) || 0;
+            const fringes = parseFloat(row.querySelector('.fringes').value) || 0;
+            
+            // Get wavelength in mm
+            const lambda = wavelength / 1000000; // nm to mm
+            
+            // Calculate sag of testplate: z = R - sqrt(R² - (D/2)²)
+            let sagTestplate = 0;
+            if (rTestplate !== 0 && diameter !== 0) {
+                const r2 = rTestplate * rTestplate;
+                const d2 = (diameter / 2) * (diameter / 2);
+                if (r2 >= d2) {
+                    sagTestplate = Math.abs(rTestplate) - Math.sqrt(r2 - d2);
+                }
+            }
+            
+            // Calculate sag added from fringes: N * λ/2
+            const sagAdded = fringes * lambda / 2;
+            
+            // Calculate actual sag
+            let sagActual = 0;
+            if (type === 'Convex') {
+                sagActual = sagTestplate + sagAdded;
+            } else {
+                sagActual = sagTestplate - sagAdded;
+            }
+            
+            // Calculate actual radius from sag: R = (D²/4 + z²) / (2z)
+            let rActual = 0;
+            if (sagActual !== 0 && diameter !== 0) {
+                const d2 = diameter * diameter / 4;
+                const z2 = sagActual * sagActual;
+                rActual = (d2 + z2) / (2 * sagActual);
+                
+                // Apply sign based on type
+                if (type === 'Concave') {
+                    rActual = -Math.abs(rActual);
+                } else {
+                    rActual = Math.abs(rActual);
+                }
+            }
+            
+            // Update calculated fields
+            row.querySelector('.sag-testplate').value = sagTestplate.toFixed(6);
+            row.querySelector('.sag-added').value = sagAdded.toFixed(6);
+            row.querySelector('.r-actual').value = rActual.toFixed(6);
+            row.querySelector('.sag-actual').value = sagActual.toFixed(6);
+            
+            updateStatus();
+        }
+
+        // Update status bar
+        function updateStatus() {
+            const rows = document.querySelectorAll('#tableBody tr').length;
+            document.getElementById('statusText').textContent = `${rows} surface${rows !== 1 ? 's' : ''} loaded`;
+        }
+
+        // Wavelength change handler
+        document.getElementById('wavelength').addEventListener('input', function() {
+            wavelength = parseFloat(this.value) || 632.8;
+            // Recalculate all rows
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                const firstInput = row.querySelector('input');
+                if (firstInput) calculateRow(firstInput);
+            });
+        });
+
+        // Add row button
+        document.getElementById('addRowBtn').addEventListener('click', function() {
+            addRow();
+            updateStatus();
+        });
+
+        // Import from Zemax (placeholder)
+        document.getElementById('importBtn').addEventListener('click', function() {
+            alert('Zemax import functionality will be implemented in Electron app');
+            // This will open file dialog and parse Zemax file
+        });
+
+        // Generate PDF Report (placeholder)
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            alert('PDF report generation will be implemented in Electron app');
+            // This will generate HTML report and convert to PDF
+        });
+
+        // Initialize
+        initTable();
+    </script>
+</body>
+</html>

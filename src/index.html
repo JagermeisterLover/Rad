@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="app.title">Optical Surface Testplate Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f9f9fb;
+            border-right: 1px solid #d2d2d7;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #d2d2d7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            padding: 4px 8px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #d2d2d7;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: #e8e8ed;
+        }
+
+        .tabs-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .tab-item {
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-item:hover {
+            background: #f5f5f7;
+            border-color: #0066cc;
+        }
+
+        .tab-item.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .tab-item.active .tab-close {
+            color: white;
+        }
+
+        .tab-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tab-name {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tab-meta {
+            font-size: 11px;
+            color: #6e6e73;
+            margin-top: 2px;
+        }
+
+        .tab-item.active .tab-meta {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .tab-close {
+            font-size: 16px;
+            color: #6e6e73;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 2px 4px;
+            line-height: 1;
+        }
+
+        .tab-close:hover {
+            color: #ff3b30;
+        }
+
+        .tab-item.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .tab-item.selected.active {
+            background: #0066cc;
+        }
+
+        .folder-item {
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .folder-item:hover {
+            background: #f5f5f7;
+            border-color: #d2d2d7;
+        }
+
+        .folder-item.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .folder-toggle {
+            font-size: 12px;
+            width: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .folder-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .folder-name {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .folder-contents {
+            padding-left: 20px;
+            display: none;
+        }
+
+        .folder-contents.expanded {
+            display: block;
+        }
+
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 4px 0;
+            z-index: 1000;
+            min-width: 180px;
+        }
+
+        .context-menu-item {
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1d1d1f;
+        }
+
+        .context-menu-item:hover {
+            background: #f5f5f7;
+        }
+
+        .context-menu-item.danger {
+            color: #ff3b30;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background: #e5e5ea;
+            margin: 4px 0;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-dialog {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .sidebar-footer {
+            padding: 8px;
+            background: white;
+            border-top: 1px solid #d2d2d7;
+            font-size: 11px;
+            color: #6e6e73;
+            text-align: center;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #d2d2d7;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: #6e6e73;
+            white-space: nowrap;
+        }
+
+        .input-group input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        button {
+            padding: 7px 16px;
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1d1d1f;
+        }
+
+        button:hover {
+            background: #f5f5f7;
+            border-color: #b8b8bd;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.primary {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        button.primary:hover:not(:disabled) {
+            background: #0055b3;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f9f9fb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #1d1d1f;
+            border-bottom: 2px solid #e5e5ea;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+
+        tbody tr:hover {
+            background: #f9f9fb;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #d2d2d7;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+
+        /* Remove spinner arrows from number inputs */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .calculated {
+            background: #e8f4fd !important;
+            color: #1d1d1f;
+            font-weight: 500;
+            border: 1px solid #b3d9f2 !important;
+        }
+
+        .calculated-header {
+            background: #e8f4fd;
+            position: relative;
+        }
+
+        .calculated-header::after {
+            content: "📊";
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .type-convex {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+
+        .type-concave {
+            background: #d1ecf1;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .bulk-actions label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+
+        .bulk-actions input {
+            width: 100px;
+        }
+
+        .bulk-actions button {
+            padding: 6px 14px;
+        }
+
+        .add-row-btn {
+            margin-top: 12px;
+            font-size: 13px;
+            padding: 6px 14px;
+        }
+
+        .status-bar {
+            background: white;
+            border-top: 1px solid #d2d2d7;
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #6e6e73;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .language-selector select {
+            padding: 4px 8px;
+            border: 1px solid #d2d2d7;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .language-selector select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .delete-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #ff3b30;
+            color: white;
+            border-color: #ff3b30;
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+
+        /* Column widths */
+        th:nth-child(1), td:nth-child(1) { width: 100px; }
+        th:nth-child(2), td:nth-child(2) { width: 100px; }
+        th:nth-child(3), td:nth-child(3) { width: 90px; }
+        th:nth-child(4), td:nth-child(4) { width: 110px; }
+        th:nth-child(5), td:nth-child(5) { width: 110px; }
+        th:nth-child(6), td:nth-child(6) { width: 90px; }
+        th:nth-child(7), td:nth-child(7) { width: 120px; }
+        th:nth-child(8), td:nth-child(8) { width: 110px; }
+        th:nth-child(9), td:nth-child(9) { width: 110px; }
+        th:nth-child(10), td:nth-child(10) { width: 80px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1 data-i18n="app.title">Optical Surface Testplate Analyzer</h1>
+            <div class="input-group">
+                <label for="wavelength" data-i18n="header.wavelength">λ (nm):</label>
+                <input type="number" id="wavelength" value="550" step="0.1">
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="language-selector">
+                <label for="languageSelect" data-i18n="language.language">Language</label>
+                <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="ru">Русский</option>
+                </select>
+            </div>
+            <button id="importBtn" data-i18n="header.import">Import from Zemax</button>
+            <button id="exportBtn" class="primary" data-i18n="header.export">Generate PDF Report</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2 data-i18n="sidebar.tables">Tables</h2>
+                <div class="sidebar-actions">
+                    <button class="icon-btn" id="newTabBtn" data-i18n-title="sidebar.newTable" title="New Table">+</button>
+                </div>
+            </div>
+            <div class="tabs-list" id="tabsList">
+                <!-- Tabs will be added dynamically -->
+            </div>
+            <div class="sidebar-footer" data-i18n="sidebar.autoSaved">
+                Auto-saved
+            </div>
+        </div>
+
+        <!-- Context Menu (hidden by default) -->
+        <div id="contextMenu" class="context-menu" style="display: none;">
+            <!-- Menu items added dynamically -->
+        </div>
+
+        <!-- Rename Modal (hidden by default) -->
+        <div id="renameModal" class="modal-overlay" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <h3 id="renameModalTitle" data-i18n="modal.renameTable">Rename Table</h3>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="renameInput" class="modal-input" data-i18n-placeholder="modal.enterName" placeholder="Enter table name">
+                </div>
+                <div class="modal-footer">
+                    <button id="renameCancelBtn" data-i18n="modal.cancel">Cancel</button>
+                    <button id="renameConfirmBtn" class="primary" data-i18n="modal.rename">Rename</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-area">
+            <div class="main-content">
+        <div class="bulk-actions">
+            <label for="bulkFringes" data-i18n="bulkActions.setAllFringes">Set all Fringes (N):</label>
+            <input type="number" id="bulkFringes" step="0.5" data-i18n-placeholder="bulkActions.placeholder" placeholder="e.g., 5">
+            <button id="applyBulkFringes" data-i18n="bulkActions.applyToAll">Apply to All</button>
+        </div>
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th data-i18n="table.type">Type</th>
+                        <th data-i18n="table.material">Material</th>
+                        <th data-i18n="table.diameter">Diameter (mm)</th>
+                        <th data-i18n="table.rTestplate">R Testplate (mm)</th>
+                        <th class="calculated-header" data-i18n="table.sagTestplate">Sag Testplate (mm)</th>
+                        <th data-i18n="table.fringes">Fringes (N)</th>
+                        <th class="calculated-header" data-i18n="table.sagAdded">Sag Added (mm)</th>
+                        <th class="calculated-header" data-i18n="table.rActual">R Actual (mm)</th>
+                        <th class="calculated-header" data-i18n="table.sagActual">Sag Actual (mm)</th>
+                        <th data-i18n="table.action">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+        <button class="add-row-btn" id="addRowBtn" data-i18n="table.addSurface">+ Add Surface</button>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText" data-i18n="status.ready">Ready</span>
+                <span id="versionText" data-i18n="app.version">v1.0.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/i18n.js"></script>
+    <script src="scripts/calculations.js"></script>
+    <script src="scripts/zemax-parser.js"></script>
+    <script src="scripts/report-generator.js"></script>
+    <script src="scripts/tab-manager.js"></script>
+    <script>
+        // State
+        let wavelength = 550; // nm (standard visible light)
+        let rowCounter = 0;
+
+        // Initialize i18n on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await I18n.init();
+            I18n.updateDOM();
+
+            // Set language selector to current locale
+            document.getElementById('languageSelect').value = I18n.getLocale();
+
+            // Listen for locale changes
+            I18n.onChange((locale) => {
+                I18n.updateDOM();
+                // Re-render table rows with new locale
+                const rows = document.querySelectorAll('#tableBody tr');
+                rows.forEach(row => updateRowLocale(row));
+                // Update status text
+                updateStatus();
+            });
+        });
+
+        // Language selector change handler
+        document.getElementById('languageSelect').addEventListener('change', async function() {
+            const newLocale = this.value;
+            await I18n.switchLocale(newLocale);
+        });
+
+        // These functions are now called by TabManager but need to be accessible
+
+        // Add a new row
+        function addRow(data = {}) {
+            const tbody = document.getElementById('tableBody');
+            const row = tbody.insertRow();
+            rowCounter++;
+
+            const defaultData = {
+                type: 'Convex',
+                material: '',
+                diameter: '',
+                rTestplate: '',
+                sagTestplate: 0,
+                fringes: '',
+                sagAdded: 0,
+                rActual: 0,
+                sagActual: 0
+            };
+
+            const rowData = { ...defaultData, ...data };
+
+            const convexText = window.I18n ? I18n.t('table.convex') : '⬤ Convex';
+            const concaveText = window.I18n ? I18n.t('table.concave') : '◯ Concave';
+            const deleteText = window.I18n ? I18n.t('table.delete') : 'Delete';
+
+            row.innerHTML = `
+                <td class="type-${rowData.type.toLowerCase()}">
+                    <select class="type-select" onchange="updateRowType(this)">
+                        <option value="Convex" ${rowData.type === 'Convex' ? 'selected' : ''}>${convexText}</option>
+                        <option value="Concave" ${rowData.type === 'Concave' ? 'selected' : ''}>${concaveText}</option>
+                    </select>
+                </td>
+                <td><input type="text" class="material" value="${rowData.material}"></td>
+                <td><input type="number" class="diameter" value="${rowData.diameter}" step="0.001" oninput="calculateRow(this)" onkeydown="handleEnterKey(event, 'diameter')"></td>
+                <td><input type="number" class="r-testplate" value="${rowData.rTestplate}" step="0.001" oninput="calculateRow(this)" onkeydown="handleEnterKey(event, 'r-testplate')"></td>
+                <td><input type="number" class="sag-testplate calculated" value="${rowData.sagTestplate.toFixed(6)}" readonly tabindex="-1"></td>
+                <td><input type="number" class="fringes" value="${rowData.fringes}" step="0.5" oninput="calculateRow(this)" onkeydown="handleEnterKey(event, 'fringes')"></td>
+                <td><input type="number" class="sag-added calculated" value="${rowData.sagAdded.toFixed(6)}" readonly tabindex="-1"></td>
+                <td><input type="number" class="r-actual calculated" value="${rowData.rActual.toFixed(6)}" readonly tabindex="-1"></td>
+                <td><input type="number" class="sag-actual calculated" value="${rowData.sagActual.toFixed(6)}" readonly tabindex="-1"></td>
+                <td><button class="delete-btn" onclick="deleteRow(this)">${deleteText}</button></td>
+            `;
+
+            if (data.diameter || data.rTestplate || data.fringes) {
+                calculateRow(row.querySelector('input'));
+            }
+
+            updateStatus();
+        }
+
+        // Delete a row
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            updateStatus();
+        }
+
+        // Update row type styling
+        function updateRowType(select) {
+            const row = select.closest('tr');
+            const typeCell = select.closest('td');
+            const type = select.value;
+
+            // Remove old classes
+            typeCell.classList.remove('type-convex', 'type-concave');
+
+            // Add new class
+            typeCell.classList.add(`type-${type.toLowerCase()}`);
+
+            // Recalculate row
+            calculateRow(select);
+        }
+
+        // Handle Enter key to move to next row in same column
+        function handleEnterKey(event, className) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+                const currentInput = event.target;
+                const currentRow = currentInput.closest('tr');
+                const currentCell = currentInput.closest('td');
+                const currentCellIndex = Array.from(currentRow.cells).indexOf(currentCell);
+
+                // Get next row
+                const nextRow = currentRow.nextElementSibling;
+
+                if (nextRow) {
+                    // Focus on the same column in the next row
+                    const nextCell = nextRow.cells[currentCellIndex];
+                    const nextInput = nextCell.querySelector('input');
+                    if (nextInput && !nextInput.readOnly) {
+                        nextInput.focus();
+                        nextInput.select();
+                    }
+                } else {
+                    // We're at the last row, add a new one
+                    addRow();
+                    // Focus on the same column in the new row
+                    setTimeout(() => {
+                        const newRow = document.querySelector('#tableBody tr:last-child');
+                        const newCell = newRow.cells[currentCellIndex];
+                        const newInput = newCell.querySelector('input');
+                        if (newInput && !newInput.readOnly) {
+                            newInput.focus();
+                            newInput.select();
+                        }
+                    }, 10);
+                }
+            }
+        }
+
+        // Calculate row values
+        function calculateRow(element) {
+            const row = element.closest('tr');
+
+            const type = row.querySelector('.type-select').value;
+            const diameter = parseFloat(row.querySelector('.diameter').value) || 0;
+            const rTestplate = parseFloat(row.querySelector('.r-testplate').value) || 0;
+            const fringes = parseFloat(row.querySelector('.fringes').value) || 0;
+
+            // Use calculations module
+            const results = Calculations.calculateSurface(type, diameter, rTestplate, fringes, wavelength);
+
+            // Update calculated fields
+            row.querySelector('.sag-testplate').value = results.sagTestplate.toFixed(6);
+            row.querySelector('.sag-added').value = results.sagAdded.toFixed(6);
+            row.querySelector('.r-actual').value = results.rActual.toFixed(6);
+            row.querySelector('.sag-actual').value = results.sagActual.toFixed(6);
+
+            updateStatus();
+        }
+
+        // Collect all table data
+        function collectTableData() {
+            const rows = [];
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                rows.push({
+                    type: row.querySelector('.type-select').value,
+                    material: row.querySelector('.material').value || '',
+                    diameter: parseFloat(row.querySelector('.diameter').value) || 0,
+                    rTestplate: parseFloat(row.querySelector('.r-testplate').value) || 0,
+                    sagTestplate: parseFloat(row.querySelector('.sag-testplate').value) || 0,
+                    fringes: parseFloat(row.querySelector('.fringes').value) || 0,
+                    sagAdded: parseFloat(row.querySelector('.sag-added').value) || 0,
+                    rActual: parseFloat(row.querySelector('.r-actual').value) || 0,
+                    sagActual: parseFloat(row.querySelector('.sag-actual').value) || 0
+                });
+            });
+            return rows;
+        }
+
+        // Load table data
+        function loadTableData(data) {
+            // Clear existing rows
+            document.getElementById('tableBody').innerHTML = '';
+
+            // Add new rows
+            data.forEach(rowData => addRow(rowData));
+
+            updateStatus();
+        }
+
+        // Update row locale-specific text
+        function updateRowLocale(row) {
+            const typeSelect = row.querySelector('.type-select');
+            if (typeSelect) {
+                const currentValue = typeSelect.value;
+                const convexOption = typeSelect.querySelector('option[value="Convex"]');
+                const concaveOption = typeSelect.querySelector('option[value="Concave"]');
+                if (convexOption) convexOption.textContent = I18n.t('table.convex');
+                if (concaveOption) concaveOption.textContent = I18n.t('table.concave');
+            }
+            const deleteBtn = row.querySelector('.delete-btn');
+            if (deleteBtn) deleteBtn.textContent = I18n.t('table.delete');
+        }
+
+        // Update status bar
+        function updateStatus() {
+            const rows = document.querySelectorAll('#tableBody tr').length;
+            const plural = I18n.getPlural(rows);
+            document.getElementById('statusText').textContent = I18n.t('status.surfacesLoaded', { count: rows, plural: plural });
+        }
+
+        // Wavelength change handler
+        document.getElementById('wavelength').addEventListener('input', function() {
+            wavelength = parseFloat(this.value) || 550;
+            // Recalculate all rows
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                const firstInput = row.querySelector('input');
+                if (firstInput) calculateRow(firstInput);
+            });
+        });
+
+        // Bulk fringes application
+        document.getElementById('applyBulkFringes').addEventListener('click', function() {
+            const bulkValue = parseFloat(document.getElementById('bulkFringes').value);
+            if (!isNaN(bulkValue)) {
+                document.querySelectorAll('#tableBody tr').forEach(row => {
+                    const fringesInput = row.querySelector('.fringes');
+                    if (fringesInput) {
+                        fringesInput.value = bulkValue;
+                        calculateRow(fringesInput);
+                    }
+                });
+                document.getElementById('statusText').textContent = I18n.t('status.appliedFringes', { value: bulkValue });
+            }
+        });
+
+        // Add row button
+        document.getElementById('addRowBtn').addEventListener('click', function() {
+            addRow();
+        });
+
+        // Import from Zemax - creates new tab
+        document.getElementById('importBtn').addEventListener('click', async function() {
+            try {
+                const fileData = await window.electronAPI.openFile();
+                if (fileData) {
+                    const surfaces = ZemaxParser.parse(fileData.content);
+                    if (surfaces.length > 0) {
+                        // Extract filename without extension
+                        const fileName = fileData.path.split(/[/\\]/).pop().replace(/\.(zmx|txt)$/i, '');
+
+                        // Create new tab with imported data using TabManager
+                        await TabManager.createTab(fileName, {
+                            wavelength: 550,
+                            surfaces: surfaces
+                        });
+
+                        document.getElementById('statusText').textContent = I18n.t('status.imported', { count: surfaces.length, name: fileName });
+                    } else {
+                        document.getElementById('statusText').textContent = I18n.t('status.noSurfaces');
+                    }
+                }
+            } catch (error) {
+                document.getElementById('statusText').textContent = I18n.t('status.errorImporting', { message: error.message });
+            }
+        });
+
+        // Generate PDF Report
+        document.getElementById('exportBtn').addEventListener('click', async function() {
+            const exportBtn = document.getElementById('exportBtn');
+            exportBtn.disabled = true;
+            exportBtn.textContent = I18n.t('header.exporting');
+
+            try {
+                const reportData = {
+                    wavelength: wavelength,
+                    surfaces: collectTableData(),
+                    timestamp: new Date().toISOString(),
+                    locale: I18n.getLocale()
+                };
+
+                const pdfData = await ReportGenerator.generate(reportData);
+                const filePath = await window.electronAPI.savePDF(pdfData);
+
+                if (filePath) {
+                    document.getElementById('statusText').textContent = I18n.t('status.reportSaved', { path: filePath });
+                }
+            } catch (error) {
+                document.getElementById('statusText').textContent = I18n.t('status.errorGenerating', { message: error.message });
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = I18n.t('header.export');
+            }
+        });
+
+        // Keyboard shortcuts removed - autosave handles saving
+
+        // Initialize TabManager
+        TabManager.init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+{
+  "app": {
+    "title": "Анализатор оптических поверхностей с пробным стеклом",
+    "version": "v1.0.0"
+  },
+  "header": {
+    "wavelength": "λ (нм):",
+    "import": "Импорт из Zemax",
+    "export": "Создать PDF отчёт",
+    "exporting": "Создание..."
+  },
+  "sidebar": {
+    "tables": "Таблицы",
+    "newTable": "Новая таблица",
+    "autoSaved": "Автосохранение"
+  },
+  "table": {
+    "type": "Тип",
+    "material": "Материал",
+    "diameter": "Диаметр",
+    "rTestplate": "R РПС",
+    "sagTestplate": "Z РПС",
+    "fringes": "Полосы (N)",
+    "sagAdded": "Приращение Z (мм)",
+    "rActual": "R факт.",
+    "sagActual": "Z факт. (мм)",
+    "action": "Действие",
+    "delete": "Удалить",
+    "addSurface": "+ Добавить поверхность",
+    "convex": "⬤ Выпуклая",
+    "concave": "◯ Вогнутая"
+  },
+  "bulkActions": {
+    "setAllFringes": "Сделать N:",
+    "placeholder": "например, 5",
+    "applyToAll": "Применить ко всем"
+  },
+  "contextMenu": {
+    "rename": "Переименовать",
+    "duplicate": "Дублировать",
+    "delete": "Удалить",
+    "deleteMultiple": "Удалить {count} элемента(-ов)",
+    "newFolder": "Новая папка",
+    "moveToFolder": "Переместить в папку"
+  },
+  "modal": {
+    "renameTable": "Переименовать таблицу",
+    "renameFolder": "Переименовать папку",
+    "enterName": "Введите название таблицы",
+    "enterFolderName": "Введите название папки",
+    "cancel": "Отмена",
+    "rename": "Переименовать",
+    "ok": "OK"
+  },
+  "status": {
+    "ready": "Готово",
+    "surfacesLoaded": "{count} поверхност{plural} загружено",
+    "imported": "Импортировано {count} поверхностей из {name}",
+    "noSurfaces": "В файле не найдено допустимых поверхностей",
+    "errorImporting": "Ошибка импорта: {message}",
+    "reportSaved": "Отчёт сохранён: {path}",
+    "errorGenerating": "Ошибка создания отчёта: {message}",
+    "appliedFringes": "Применено {value} полос ко всем поверхностям",
+    "cannotDeleteAll": "Невозможно удалить все таблицы. Должна остаться хотя бы одна.",
+    "confirmDelete": "Удалить {count} таблиц(ы)?",
+    "tabDeleted": "Таблица удалена успешно. Осталось таблиц: {count}"
+  },
+  "language": {
+    "language": "Язык",
+    "english": "English",
+    "russian": "Русский"
+  },
+  "report": {
+    "title": "Пересчет радиусов по РПС",
+    "subtitle": "Результаты",
+    "labelDate": "Дата",
+    "labelWavelength": "Длина волны",
+    "labelSurfaceCount": "Количество поверхностей",
+    "unitNm": "нм",
+    "unitMm": "мм",
+    "sectionResults": "Результаты измерений",
+    "thType": "Тип",
+    "thMaterial": "Материал",
+    "thDiameter": "Диаметр",
+    "thRTestplate": "R пробного стекла",
+    "thSagTestplate": "Стрелка пробного стекла",
+    "thFringes": "Полосы",
+    "thSagAdded": "Добавленная стрелка",
+    "thRActual": "R фактический",
+    "thSagActual": "Стрелка фактическая",
+    "sectionFormulas": "Формулы расчёта",
+    "formula1Title": "Стрелка пробного стекла",
+    "formula2Title": "Вклад интерференционных полос",
+    "formula3Title": "Фактическая стрелка",
+    "formula3Convex": "Выпуклая",
+    "formula3Concave": "Вогнутая",
+    "formula4Title": "Фактический радиус",
+    "signConventionTitle": "Правило знаков",
+    "signPositive": "Положительный радиус",
+    "signPositiveDesc": "Выпуклая поверхность (центр кривизны справа)",
+    "signNegative": "Отрицательный радиус",
+    "signNegativeDesc": "Вогнутая поверхность (центр кривизны слева)",
+    "notesTitle": "Примечания",
+    "notesContent": "• Все измерения выполнены методом интерферометрии с пробным стеклом<br>• Количество полос представляет интерференционные картины, наблюдаемые между пробным стеклом и тестируемой поверхностью<br>• Выделенные столбцы показывают расчётные значения, полученные из измерений<br>• Точность зависит от точности подсчёта полос и стабильности длины волны",
+    "footer1": "Создано программой Анализатор оптических поверхностей с пробным стеклом v1.0.0",
+    "footer2": "Этот отчёт предназначен только для информационных целей"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /B /S \"d:\\Kalovaya_massa\\Rad\")",
+      "Bash(findstr:*)",
+      "Bash(del INSTALL.md QUICK_START.md PROJECT_STRUCTURE.md ZEMAX_IMPORT_GUIDE.md TAB_SYSTEM_GUIDE.md AUTOSAVE_SYSTEM_GUIDE.md UI_IMPROVEMENTS.md)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

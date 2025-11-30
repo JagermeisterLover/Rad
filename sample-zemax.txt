@@ -1,0 +1,27 @@
+# Sample Zemax Format File
+# For testing the import functionality
+
+SURF 0
+TYPE STANDARD
+CURV 0.0
+DIAM 25.0
+
+SURF 1
+TYPE STANDARD
+CURV 0.01
+DIAM 50.0
+
+SURF 2
+TYPE STANDARD
+RADIUS 150.0
+DIAM 75.0
+
+SURF 3
+TYPE STANDARD
+RADIUS -200.0
+SDIA 40.0
+
+# Alternative simple format (also supported):
+# Surface1 100.0 50.0
+# Surface2 -150.0 60.0
+# Surface3 200.0 75.0
