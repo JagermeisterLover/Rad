@@ -5,7 +5,16 @@
       "Bash(findstr:*)",
       "Bash(del INSTALL.md QUICK_START.md PROJECT_STRUCTURE.md ZEMAX_IMPORT_GUIDE.md TAB_SYSTEM_GUIDE.md AUTOSAVE_SYSTEM_GUIDE.md UI_IMPROVEMENTS.md)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Optical Surface Testplate Analyzer with full localization\n\n- Complete Electron desktop application for optical surface measurements\n- Testplate interferometry calculations and analysis\n- Multi-tab system with autosave functionality\n- Zemax file import support\n- PDF report generation with Puppeteer\n- Full localization system (English and Russian)\n- Comprehensive i18n module with parameter interpolation\n- Language switcher in UI with real-time updates\n- Localized PDF reports\n- Russian plural forms support\n- All UI elements, context menus, and status messages localized\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(npm start)",
+      "Bash(npm install:*)",
+      "Bash(taskkill:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd theme-aware surface type colorization\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push)",
+      "Bash(del nul)"
     ],
     "deny": [],
     "ask": []

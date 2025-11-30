@@ -8,16 +8,13 @@ const ReportGenerator = {
      * Generate PDF report from measurement data
      *
      * @param {object} data - Report data
-     * @returns {Promise<string>} Base64 encoded PDF
+     * @returns {Promise<string>} HTML content
      */
     async generate(data) {
         // Generate HTML report
         const html = await this.generateHTML(data);
 
-        // Convert to PDF using browser's print functionality
-        const pdfData = await this.htmlToPDF(html);
-
-        return pdfData;
+        return html;
     },
 
     /**
@@ -112,69 +109,11 @@ const ReportGenerator = {
             .replace(/\{\{SIGN_NEGATIVE_DESC\}\}/g, t('report.signNegativeDesc'))
             .replace(/\{\{NOTES_TITLE\}\}/g, t('report.notesTitle'))
             .replace(/\{\{NOTES_CONTENT\}\}/g, t('report.notesContent'))
-            .replace(/\{\{FOOTER_1\}\}/g, t('report.footer1'))
-            .replace(/\{\{FOOTER_2\}\}/g, t('report.footer2'));
+            .replace(/\{\{FOOTER_1\}\}/g, t('report.footer1'));
 
         return html;
     },
 
-    /**
-     * Convert HTML to PDF using print
-     *
-     * @param {string} html - HTML content
-     * @returns {Promise<string>} Base64 encoded PDF
-     */
-    async htmlToPDF(html) {
-        return new Promise((resolve, reject) => {
-            // Create hidden iframe
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'absolute';
-            iframe.style.left = '-9999px';
-            iframe.style.width = '210mm';
-            iframe.style.height = '297mm';
-            document.body.appendChild(iframe);
-
-            // Load HTML into iframe
-            const doc = iframe.contentDocument || iframe.contentWindow.document;
-            doc.open();
-            doc.write(html);
-            doc.close();
-
-            // Wait for content to load
-            iframe.onload = async () => {
-                try {
-                    // Use CSS page setup for proper PDF output
-                    const printWindow = iframe.contentWindow;
-
-                    // Print to PDF
-                    await printWindow.print();
-
-                    // Note: In Electron, we need to use a different approach
-                    // We'll create a simple HTML-to-base64 conversion instead
-                    const htmlBase64 = btoa(unescape(encodeURIComponent(html)));
-
-                    // Clean up
-                    document.body.removeChild(iframe);
-
-                    resolve(htmlBase64);
-                } catch (error) {
-                    document.body.removeChild(iframe);
-                    reject(error);
-                }
-            };
-
-            // Fallback if onload doesn't fire
-            setTimeout(() => {
-                try {
-                    const htmlBase64 = btoa(unescape(encodeURIComponent(html)));
-                    document.body.removeChild(iframe);
-                    resolve(htmlBase64);
-                } catch (error) {
-                    reject(error);
-                }
-            }, 2000);
-        });
-    },
 
     /**
      * Format number with units

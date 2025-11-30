@@ -1,12 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
+const puppeteer = require('puppeteer');
 
 let mainWindow;
-
-// Get user data directory for storing tables
-const userDataPath = app.getPath('userData');
-const tablesDir = path.join(userDataPath, 'tables');
+let tablesDir;
+let reportsDir;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -14,6 +13,8 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 600,
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -35,7 +36,14 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Initialize paths after app is ready
+  const userDataPath = app.getPath('userData');
+  tablesDir = path.join(userDataPath, 'tables');
+  reportsDir = path.join(userDataPath, 'reports');
+
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -123,25 +131,54 @@ ipcMain.handle('dialog:openProject', async () => {
   };
 });
 
-// Save PDF report
-ipcMain.handle('dialog:savePDF', async (event, pdfData) => {
-  const result = await dialog.showSaveDialog(mainWindow, {
-    filters: [
-      { name: 'PDF Files', extensions: ['pdf'] },
-      { name: 'All Files', extensions: ['*'] }
-    ],
-    defaultPath: 'testplate-report.pdf'
-  });
+// Generate PDF report using Puppeteer
+ipcMain.handle('pdf:generateReport', async (event, htmlContent, tabName) => {
+  try {
+    // Ensure reports directory exists
+    await fs.mkdir(reportsDir, { recursive: true });
 
-  if (result.canceled) {
-    return null;
+    // Generate filename with timestamp and tab name
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const safeName = tabName.replace(/[^a-z0-9]/gi, '_').slice(0, 50);
+    const filename = `report_${safeName}_${timestamp}.pdf`;
+    const filePath = path.join(reportsDir, filename);
+
+    // Launch Puppeteer
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+
+    // Set content and wait for it to load
+    await page.setContent(htmlContent, {
+      waitUntil: 'networkidle0'
+    });
+
+    // Generate PDF
+    await page.pdf({
+      path: filePath,
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20mm',
+        right: '15mm',
+        bottom: '20mm',
+        left: '15mm'
+      }
+    });
+
+    await browser.close();
+
+    // Show file in folder (works on all platforms)
+    shell.showItemInFolder(filePath);
+
+    return filePath;
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    throw error;
   }
-
-  // Convert base64 to buffer
-  const buffer = Buffer.from(pdfData, 'base64');
-  await fs.writeFile(result.filePath, buffer);
-
-  return result.filePath;
 });
 
 // Read report template
@@ -256,4 +293,27 @@ ipcMain.handle('i18n:getAvailableLocales', async () => {
   } catch {
     return ['en'];
   }
+});
+
+// Window control handlers
+ipcMain.handle('window:minimize', () => {
+  if (mainWindow) mainWindow.minimize();
+});
+
+ipcMain.handle('window:maximize', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  }
+});
+
+ipcMain.handle('window:close', () => {
+  if (mainWindow) mainWindow.close();
+});
+
+ipcMain.handle('window:isMaximized', () => {
+  return mainWindow ? mainWindow.isMaximized() : false;
 });

@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFile: () => ipcRenderer.invoke('dialog:openFile'),
   saveProject: (data) => ipcRenderer.invoke('dialog:saveProject', data),
   openProject: () => ipcRenderer.invoke('dialog:openProject'),
-  savePDF: (pdfData) => ipcRenderer.invoke('dialog:savePDF', pdfData),
+  generateReport: (htmlContent, tabName) => ipcRenderer.invoke('pdf:generateReport', htmlContent, tabName),
 
   // File operations
   readTemplate: () => ipcRenderer.invoke('file:readTemplate'),
@@ -24,6 +24,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Localization
   loadLocale: (locale) => ipcRenderer.invoke('i18n:loadLocale', locale),
   getAvailableLocales: () => ipcRenderer.invoke('i18n:getAvailableLocales'),
+
+  // Window controls
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('window:maximize'),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
+  isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
 
   // Platform info
   platform: process.platform
