@@ -66,19 +66,27 @@ const ReportGenerator = {
             minute: '2-digit'
         });
 
+        // Translate surface type
+        const translateType = (type) => {
+            if (locale === 'ru') {
+                return type === 'Convex' ? 'Выпуклая' : 'Вогнутая';
+            }
+            return type;
+        };
+
         // Generate table rows
         const tableRows = data.surfaces.map((surface, index) => {
             return `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${surface.type}</td>
+                    <td>${translateType(surface.type)}</td>
                     <td>${surface.material || '-'}</td>
                     <td>${surface.diameter.toFixed(3)}</td>
-                    <td>${surface.rTestplate.toFixed(3)}</td>
+                    <td>${surface.rTestplate.toFixed(5)}</td>
                     <td>${surface.sagTestplate.toFixed(6)}</td>
                     <td>${surface.fringes.toFixed(1)}</td>
                     <td>${surface.sagAdded.toFixed(6)}</td>
-                    <td>${surface.rActual.toFixed(3)}</td>
+                    <td>${surface.rActual.toFixed(5)}</td>
                     <td>${surface.sagActual.toFixed(6)}</td>
                 </tr>
             `;
