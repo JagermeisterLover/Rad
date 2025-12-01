@@ -1,20 +1,33 @@
 /**
- * PDF Report Generator
- * Uses HTML to PDF conversion for professional reports
+ * Report Generator
+ * Supports both HTML and PDF export
  */
 
 const ReportGenerator = {
     /**
-     * Generate PDF report from measurement data
+     * Export HTML report to file
      *
      * @param {object} data - Report data
-     * @returns {Promise<string>} HTML content
+     * @param {string} tabName - Name of the current tab
+     * @returns {Promise<string>} Path to saved file
      */
-    async generate(data) {
-        // Generate HTML report
+    async exportHTML(data, tabName) {
         const html = await this.generateHTML(data);
+        const filePath = await window.electronAPI.exportHTML(html, tabName);
+        return filePath;
+    },
 
-        return html;
+    /**
+     * Export PDF report to file
+     *
+     * @param {object} data - Report data
+     * @param {string} tabName - Name of the current tab
+     * @returns {Promise<string>} Path to saved file
+     */
+    async exportPDF(data, tabName) {
+        const html = await this.generateHTML(data);
+        const filePath = await window.electronAPI.exportPDF(html, tabName);
+        return filePath;
     },
 
     /**
@@ -53,19 +66,27 @@ const ReportGenerator = {
             minute: '2-digit'
         });
 
+        // Translate surface type
+        const translateType = (type) => {
+            if (locale === 'ru') {
+                return type === 'Convex' ? 'Выпуклая' : 'Вогнутая';
+            }
+            return type;
+        };
+
         // Generate table rows
         const tableRows = data.surfaces.map((surface, index) => {
             return `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${surface.type}</td>
+                    <td>${translateType(surface.type)}</td>
                     <td>${surface.material || '-'}</td>
                     <td>${surface.diameter.toFixed(3)}</td>
-                    <td>${surface.rTestplate.toFixed(3)}</td>
+                    <td>${surface.rTestplate.toFixed(5)}</td>
                     <td>${surface.sagTestplate.toFixed(6)}</td>
                     <td>${surface.fringes.toFixed(1)}</td>
                     <td>${surface.sagAdded.toFixed(6)}</td>
-                    <td>${surface.rActual.toFixed(3)}</td>
+                    <td>${surface.rActual.toFixed(5)}</td>
                     <td>${surface.sagActual.toFixed(6)}</td>
                 </tr>
             `;
@@ -76,6 +97,8 @@ const ReportGenerator = {
             .replace(/\{\{LOCALE\}\}/g, locale)
             .replace(/\{\{TITLE\}\}/g, t('report.title'))
             .replace(/\{\{SUBTITLE\}\}/g, t('report.subtitle'))
+            .replace(/\{\{LABEL_TABLE_NAME\}\}/g, t('report.labelTableName'))
+            .replace(/\{\{TABLE_NAME\}\}/g, data.tableName || 'N/A')
             .replace(/\{\{LABEL_DATE\}\}/g, t('report.labelDate'))
             .replace(/\{\{DATE\}\}/g, formattedDate)
             .replace(/\{\{LABEL_WAVELENGTH\}\}/g, t('report.labelWavelength'))
@@ -102,13 +125,11 @@ const ReportGenerator = {
             .replace(/\{\{FORMULA_3_CONVEX\}\}/g, t('report.formula3Convex'))
             .replace(/\{\{FORMULA_3_CONCAVE\}\}/g, t('report.formula3Concave'))
             .replace(/\{\{FORMULA_4_TITLE\}\}/g, t('report.formula4Title'))
-            .replace(/\{\{SIGN_CONVENTION_TITLE\}\}/g, t('report.signConventionTitle'))
+            .replace(/\{\{SIGN_CONVENTION_TITLE_R_ACTUAL\}\}/g, t('report.signConventionTitleRActual'))
             .replace(/\{\{SIGN_POSITIVE\}\}/g, t('report.signPositive'))
             .replace(/\{\{SIGN_POSITIVE_DESC\}\}/g, t('report.signPositiveDesc'))
             .replace(/\{\{SIGN_NEGATIVE\}\}/g, t('report.signNegative'))
             .replace(/\{\{SIGN_NEGATIVE_DESC\}\}/g, t('report.signNegativeDesc'))
-            .replace(/\{\{NOTES_TITLE\}\}/g, t('report.notesTitle'))
-            .replace(/\{\{NOTES_CONTENT\}\}/g, t('report.notesContent'))
             .replace(/\{\{FOOTER_1\}\}/g, t('report.footer1'));
 
         return html;

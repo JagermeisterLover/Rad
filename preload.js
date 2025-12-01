@@ -7,7 +7,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFile: () => ipcRenderer.invoke('dialog:openFile'),
   saveProject: (data) => ipcRenderer.invoke('dialog:saveProject', data),
   openProject: () => ipcRenderer.invoke('dialog:openProject'),
-  generateReport: (htmlContent, tabName) => ipcRenderer.invoke('pdf:generateReport', htmlContent, tabName),
+
+  // Report generation
+  exportHTML: (htmlContent, tabName) => ipcRenderer.invoke('report:exportHTML', htmlContent, tabName),
+  exportPDF: (htmlContent, tabName) => ipcRenderer.invoke('report:exportPDF', htmlContent, tabName),
 
   // File operations
   readTemplate: () => ipcRenderer.invoke('file:readTemplate'),
