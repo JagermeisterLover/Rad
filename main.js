@@ -197,11 +197,10 @@ ipcMain.handle('report:exportPDF', async (event, htmlContent, tabName) => {
       pageSize: 'A4',
       printBackground: true,
       margins: {
-        marginType: 'custom',
-        top: 20,
-        bottom: 20,
-        left: 15,
-        right: 15
+        top: 0.79,    // 20mm in inches
+        bottom: 0.79, // 20mm in inches
+        left: 0.59,   // 15mm in inches
+        right: 0.59   // 15mm in inches
       }
     });
 
