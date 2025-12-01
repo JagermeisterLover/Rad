@@ -1237,16 +1237,17 @@
             exportBtn.textContent = I18n.t('header.exporting');
 
             try {
+                // Get current tab name
+                const currentTab = TabManager.tabs.find(t => t.id === TabManager.activeTabId);
+                const tabName = currentTab ? currentTab.name : 'report';
+
                 const reportData = {
+                    tableName: tabName,
                     wavelength: wavelength,
                     surfaces: collectTableData(),
                     timestamp: new Date().toISOString(),
                     locale: I18n.getLocale()
                 };
-
-                // Get current tab name for filename
-                const currentTab = TabManager.tabs.find(t => t.id === TabManager.activeTabId);
-                const tabName = currentTab ? currentTab.name : 'report';
 
                 // Export HTML report
                 const filePath = await ReportGenerator.exportHTML(reportData, tabName);
@@ -1270,16 +1271,17 @@
             exportBtn.textContent = I18n.t('header.exporting');
 
             try {
+                // Get current tab name
+                const currentTab = TabManager.tabs.find(t => t.id === TabManager.activeTabId);
+                const tabName = currentTab ? currentTab.name : 'report';
+
                 const reportData = {
+                    tableName: tabName,
                     wavelength: wavelength,
                     surfaces: collectTableData(),
                     timestamp: new Date().toISOString(),
                     locale: I18n.getLocale()
                 };
-
-                // Get current tab name for filename
-                const currentTab = TabManager.tabs.find(t => t.id === TabManager.activeTabId);
-                const tabName = currentTab ? currentTab.name : 'report';
 
                 // Export PDF report
                 const filePath = await ReportGenerator.exportPDF(reportData, tabName);

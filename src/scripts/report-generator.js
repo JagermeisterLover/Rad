@@ -97,6 +97,8 @@ const ReportGenerator = {
             .replace(/\{\{LOCALE\}\}/g, locale)
             .replace(/\{\{TITLE\}\}/g, t('report.title'))
             .replace(/\{\{SUBTITLE\}\}/g, t('report.subtitle'))
+            .replace(/\{\{LABEL_TABLE_NAME\}\}/g, t('report.labelTableName'))
+            .replace(/\{\{TABLE_NAME\}\}/g, data.tableName || 'N/A')
             .replace(/\{\{LABEL_DATE\}\}/g, t('report.labelDate'))
             .replace(/\{\{DATE\}\}/g, formattedDate)
             .replace(/\{\{LABEL_WAVELENGTH\}\}/g, t('report.labelWavelength'))
@@ -123,13 +125,11 @@ const ReportGenerator = {
             .replace(/\{\{FORMULA_3_CONVEX\}\}/g, t('report.formula3Convex'))
             .replace(/\{\{FORMULA_3_CONCAVE\}\}/g, t('report.formula3Concave'))
             .replace(/\{\{FORMULA_4_TITLE\}\}/g, t('report.formula4Title'))
-            .replace(/\{\{SIGN_CONVENTION_TITLE\}\}/g, t('report.signConventionTitle'))
+            .replace(/\{\{SIGN_CONVENTION_TITLE_R_ACTUAL\}\}/g, t('report.signConventionTitleRActual'))
             .replace(/\{\{SIGN_POSITIVE\}\}/g, t('report.signPositive'))
             .replace(/\{\{SIGN_POSITIVE_DESC\}\}/g, t('report.signPositiveDesc'))
             .replace(/\{\{SIGN_NEGATIVE\}\}/g, t('report.signNegative'))
             .replace(/\{\{SIGN_NEGATIVE_DESC\}\}/g, t('report.signNegativeDesc'))
-            .replace(/\{\{NOTES_TITLE\}\}/g, t('report.notesTitle'))
-            .replace(/\{\{NOTES_CONTENT\}\}/g, t('report.notesContent'))
             .replace(/\{\{FOOTER_1\}\}/g, t('report.footer1'));
 
         return html;
