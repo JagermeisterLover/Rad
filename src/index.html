@@ -845,7 +845,8 @@
                     <option value="ru">Русский</option>
                 </select>
             </div>
-            <button id="exportBtn" class="primary" data-i18n="header.export">Generate PDF Report</button>
+            <button id="exportHTMLBtn" class="secondary" data-i18n="header.exportHTML">Export HTML</button>
+            <button id="exportPDFBtn" class="primary" data-i18n="header.exportPDF">Export PDF</button>
         </div>
     </div>
 
@@ -1228,9 +1229,10 @@
             }
         });
 
-        // Generate PDF Report
-        document.getElementById('exportBtn').addEventListener('click', async function() {
-            const exportBtn = document.getElementById('exportBtn');
+        // Export HTML Report
+        document.getElementById('exportHTMLBtn').addEventListener('click', async function() {
+            const exportBtn = document.getElementById('exportHTMLBtn');
+            const originalText = exportBtn.textContent;
             exportBtn.disabled = true;
             exportBtn.textContent = I18n.t('header.exporting');
 
@@ -1242,15 +1244,12 @@
                     locale: I18n.getLocale()
                 };
 
-                // Generate HTML content
-                const htmlContent = await ReportGenerator.generate(reportData);
-
                 // Get current tab name for filename
                 const currentTab = TabManager.tabs.find(t => t.id === TabManager.activeTabId);
                 const tabName = currentTab ? currentTab.name : 'report';
 
-                // Generate PDF and open in folder
-                const filePath = await window.electronAPI.generateReport(htmlContent, tabName);
+                // Export HTML report
+                const filePath = await ReportGenerator.exportHTML(reportData, tabName);
 
                 if (filePath) {
                     document.getElementById('statusText').textContent = I18n.t('status.reportSaved', { path: filePath });
@@ -1259,7 +1258,40 @@
                 document.getElementById('statusText').textContent = I18n.t('status.errorGenerating', { message: error.message });
             } finally {
                 exportBtn.disabled = false;
-                exportBtn.textContent = I18n.t('header.export');
+                exportBtn.textContent = originalText;
+            }
+        });
+
+        // Export PDF Report
+        document.getElementById('exportPDFBtn').addEventListener('click', async function() {
+            const exportBtn = document.getElementById('exportPDFBtn');
+            const originalText = exportBtn.textContent;
+            exportBtn.disabled = true;
+            exportBtn.textContent = I18n.t('header.exporting');
+
+            try {
+                const reportData = {
+                    wavelength: wavelength,
+                    surfaces: collectTableData(),
+                    timestamp: new Date().toISOString(),
+                    locale: I18n.getLocale()
+                };
+
+                // Get current tab name for filename
+                const currentTab = TabManager.tabs.find(t => t.id === TabManager.activeTabId);
+                const tabName = currentTab ? currentTab.name : 'report';
+
+                // Export PDF report
+                const filePath = await ReportGenerator.exportPDF(reportData, tabName);
+
+                if (filePath) {
+                    document.getElementById('statusText').textContent = I18n.t('status.reportSaved', { path: filePath });
+                }
+            } catch (error) {
+                document.getElementById('statusText').textContent = I18n.t('status.errorGenerating', { message: error.message });
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
             }
         });
 

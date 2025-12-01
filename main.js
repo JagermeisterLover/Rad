@@ -1,7 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
-const puppeteer = require('puppeteer');
 
 let mainWindow;
 let tablesDir;
@@ -131,52 +130,93 @@ ipcMain.handle('dialog:openProject', async () => {
   };
 });
 
-// Generate PDF report using Puppeteer
-ipcMain.handle('pdf:generateReport', async (event, htmlContent, tabName) => {
+// Export HTML report
+ipcMain.handle('report:exportHTML', async (event, htmlContent, tabName) => {
   try {
-    // Ensure reports directory exists
-    await fs.mkdir(reportsDir, { recursive: true });
-
-    // Generate filename with timestamp and tab name
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const safeName = tabName.replace(/[^a-z0-9]/gi, '_').slice(0, 50);
-    const filename = `report_${safeName}_${timestamp}.pdf`;
-    const filePath = path.join(reportsDir, filename);
-
-    // Launch Puppeteer
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    // Show save dialog
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export HTML Report',
+      defaultPath: `report_${tabName}_${Date.now()}.html`,
+      filters: [
+        { name: 'HTML Files', extensions: ['html'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
     });
 
-    const page = await browser.newPage();
+    if (result.canceled) {
+      return null;
+    }
 
-    // Set content and wait for it to load
-    await page.setContent(htmlContent, {
-      waitUntil: 'networkidle0'
+    // Save HTML file
+    await fs.writeFile(result.filePath, htmlContent, 'utf-8');
+
+    // Show file in folder
+    shell.showItemInFolder(result.filePath);
+
+    return result.filePath;
+  } catch (error) {
+    console.error('HTML export error:', error);
+    throw error;
+  }
+});
+
+// Export PDF report using Electron's built-in printToPDF
+ipcMain.handle('report:exportPDF', async (event, htmlContent, tabName) => {
+  try {
+    // Show save dialog
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export PDF Report',
+      defaultPath: `report_${tabName}_${Date.now()}.pdf`,
+      filters: [
+        { name: 'PDF Files', extensions: ['pdf'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
     });
 
-    // Generate PDF
-    await page.pdf({
-      path: filePath,
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20mm',
-        right: '15mm',
-        bottom: '20mm',
-        left: '15mm'
+    if (result.canceled) {
+      return null;
+    }
+
+    // Create a hidden window for PDF generation
+    const pdfWindow = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
       }
     });
 
-    await browser.close();
+    // Load the HTML content
+    await pdfWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
 
-    // Show file in folder (works on all platforms)
-    shell.showItemInFolder(filePath);
+    // Wait for content to be ready
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    return filePath;
+    // Generate PDF using Electron's built-in method
+    const pdfData = await pdfWindow.webContents.printToPDF({
+      pageSize: 'A4',
+      printBackground: true,
+      margins: {
+        marginType: 'custom',
+        top: 20,
+        bottom: 20,
+        left: 15,
+        right: 15
+      }
+    });
+
+    // Close the hidden window
+    pdfWindow.close();
+
+    // Save PDF file
+    await fs.writeFile(result.filePath, pdfData);
+
+    // Show file in folder
+    shell.showItemInFolder(result.filePath);
+
+    return result.filePath;
   } catch (error) {
-    console.error('PDF generation error:', error);
+    console.error('PDF export error:', error);
     throw error;
   }
 });

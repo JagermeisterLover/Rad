@@ -6,8 +6,9 @@
   "header": {
     "wavelength": "λ (нм):",
     "import": "Импорт из Zemax",
-    "export": "Создать PDF отчёт",
-    "exporting": "Создание..."
+    "exportHTML": "Экспорт HTML",
+    "exportPDF": "Экспорт PDF",
+    "exporting": "Экспорт..."
   },
   "sidebar": {
     "tables": "Таблицы",

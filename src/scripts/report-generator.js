@@ -1,20 +1,33 @@
 /**
- * PDF Report Generator
- * Uses HTML to PDF conversion for professional reports
+ * Report Generator
+ * Supports both HTML and PDF export
  */
 
 const ReportGenerator = {
     /**
-     * Generate PDF report from measurement data
+     * Export HTML report to file
      *
      * @param {object} data - Report data
-     * @returns {Promise<string>} HTML content
+     * @param {string} tabName - Name of the current tab
+     * @returns {Promise<string>} Path to saved file
      */
-    async generate(data) {
-        // Generate HTML report
+    async exportHTML(data, tabName) {
         const html = await this.generateHTML(data);
+        const filePath = await window.electronAPI.exportHTML(html, tabName);
+        return filePath;
+    },
 
-        return html;
+    /**
+     * Export PDF report to file
+     *
+     * @param {object} data - Report data
+     * @param {string} tabName - Name of the current tab
+     * @returns {Promise<string>} Path to saved file
+     */
+    async exportPDF(data, tabName) {
+        const html = await this.generateHTML(data);
+        const filePath = await window.electronAPI.exportPDF(html, tabName);
+        return filePath;
     },
 
     /**
