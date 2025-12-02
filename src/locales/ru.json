@@ -99,9 +99,9 @@
     "formula4Title": "Фактический радиус",
     "signConventionTitleRActual": "Правило знаков для R факт.",
     "signPositive": "Положительный радиус",
-    "signPositiveDesc": "Выпуклая поверхность (центр кривизны справа)",
+    "signPositiveDesc": "Выпуклая поверхность",
     "signNegative": "Отрицательный радиус",
-    "signNegativeDesc": "Вогнутая поверхность (центр кривизны слева)",
+    "signNegativeDesc": "Вогнутая поверхность",
     "footer1": "Создано программой Rad v1.0.0"
   }
 }
